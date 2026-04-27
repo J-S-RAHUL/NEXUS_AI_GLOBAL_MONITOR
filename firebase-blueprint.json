@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "Disaster": {
+      "title": "Disaster Event",
+      "description": "Represents a detected or simulated disaster event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["flood", "fire", "earthquake", "hurricane", "tornado"] },
+        "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "name": { "type": "string" }
+          },
+          "required": ["lat", "lng"]
+        },
+        "description": { "type": "string" },
+        "summary": { "type": "string" },
+        "affectedPopulation": { "type": "integer" },
+        "resources": {
+          "type": "object",
+          "properties": {
+            "food": { "type": "integer" },
+            "water": { "type": "integer" },
+            "medicalKits": { "type": "integer" }
+          }
+        },
+        "status": { "type": "string", "enum": ["active", "contained", "resolved"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "detectedBy": { "type": "string" }
+      },
+      "required": ["id", "type", "severity", "location", "status", "timestamp"]
+    },
+    "Alert": {
+      "title": "System Alert",
+      "description": "Activity feed alerts for system events.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["info", "success", "warning", "error"] },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Volunteer": {
+      "title": "Volunteer",
+      "description": "Represents a rescue/response worker.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "status": { "type": "string", "enum": ["available", "assigned", "busy"] },
+        "assignedDisasterId": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "disasters": {
+      "schema": "Disaster",
+      "description": "Active and past disaster events."
+    },
+    "alerts": {
+      "schema": "Alert",
+      "description": "System activity logs."
+    },
+    "volunteers": {
+      "schema": "Volunteer",
+      "description": "Responder tracking."
+    }
+  }
+}

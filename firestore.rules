@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation helpers
+    function isValidDisaster(data) {
+      return data.id is string && 
+             data.type in ['flood', 'fire', 'earthquake', 'hurricane', 'tornado'] &&
+             data.severity in ['low', 'medium', 'high'] &&
+             data.location is map &&
+             data.location.lat is number &&
+             data.location.lng is number &&
+             data.status in ['active', 'contained', 'resolved'] &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidAlert(data) {
+      return data.id is string &&
+             data.message is string &&
+             data.type in ['info', 'success', 'warning', 'error'] &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidVolunteer(data) {
+      return data.id is string &&
+             data.name is string &&
+             data.status in ['available', 'assigned', 'busy'];
+    }
+
+    // Public read for demo purposes, authenticated write
+    match /disasters/{disasterId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidDisaster(incoming());
+      allow update: if isSignedIn() && (
+        // Allow status updates or resource adjustments
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'resources', 'summary', 'affectedPopulation'])
+      );
+      allow delete: if isSignedIn();
+    }
+
+    match /alerts/{alertId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidAlert(incoming());
+    }
+
+    match /volunteers/{volunteerId} {
+      allow read: if true;
+      allow create, update: if isSignedIn() && isValidVolunteer(incoming());
+      allow delete: if isSignedIn();
+    }
+  }
+}
