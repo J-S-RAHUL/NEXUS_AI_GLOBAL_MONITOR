@@ -128,6 +128,7 @@ export default function MapDashboard({ disasters, onSelectDisaster }: MapDashboa
   });
 
   const [selectedMarker, setSelectedMarker] = useState<any>(null);
+  const [mapType, setMapType] = useState<'roadmap' | 'satellite' | 'hybrid'>('roadmap');
 
   if (loadError || isPlaceholder) {
     return (
@@ -169,6 +170,7 @@ export default function MapDashboard({ disasters, onSelectDisaster }: MapDashboa
       center={center}
       zoom={4}
       options={mapOptions}
+      mapTypeId={mapType}
     >
       {disasters.map((disaster) => (
         <React.Fragment key={disaster.id}>
@@ -241,7 +243,24 @@ export default function MapDashboard({ disasters, onSelectDisaster }: MapDashboa
               </div>
            </div>
 
-           <div className="pt-2 border-t border-white/5 space-y-2">
+           <div className="pt-2 border-t border-white/5 space-y-4">
+              <button 
+                 onClick={() => setMapType(prev => prev === 'roadmap' ? 'hybrid' : 'roadmap')}
+                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border transition-all ${
+                    mapType === 'hybrid' 
+                    ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-400' 
+                    : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 opacity-60 hover:opacity-100'
+                 }`}
+              >
+                 <span className="text-[8px] font-bold uppercase tracking-widest">Orbital Imagery</span>
+                 <div className={`w-8 h-4 rounded-full relative transition-colors ${mapType === 'hybrid' ? 'bg-cyan-500' : 'bg-white/10'}`}>
+                    <motion.div 
+                       animate={{ x: mapType === 'hybrid' ? 16 : 2 }}
+                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                       className="absolute top-1 w-2 h-2 rounded-full bg-white shadow-sm"
+                    />
+                 </div>
+              </button>
               <div className="flex justify-between text-[8px] font-mono text-white/20 uppercase">
                  <span>Scanning...</span>
                  <span className="text-cyan-500">100%</span>
@@ -275,6 +294,11 @@ export default function MapDashboard({ disasters, onSelectDisaster }: MapDashboa
               }`}>
                 {selectedMarker.severity}
               </span>
+              {selectedMarker.live && (
+                <span className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-600 flex items-center gap-1 animate-pulse">
+                  <span className="w-1 h-1 rounded-full bg-emerald-500" /> LIVE
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-600 mb-2">{selectedMarker.summary || 'Awaiting analysis...'}</p>
             <button 

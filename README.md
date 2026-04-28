@@ -1,20 +1,62 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Nexus: Tactical Disaster Response Grid
 
-# Run and deploy your AI Studio app
+A cinematic, real-time disaster monitoring and response platform built with React, Tailwind CSS, and Firebase.
 
-This contains everything you need to run your app locally.
+## 🚀 Getting Started
 
-View your app in AI Studio: https://ai.studio/apps/b8e0b29d-7026-4ae2-878d-9c59dc10d90c
+If you have exported this from Google AI Studio, follow these steps to get it running locally or on GitHub:
 
-## Run Locally
+### 1. Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- A Firebase Project (free tier works)
 
-**Prerequisites:**  Node.js
+### 2. Firebase Setup (Required)
+The application relies on Firebase for real-time data. To make it work:
+1. Go to the [Firebase Console](https://console.firebase.google.com/).
+2. Create a new project named "Nexus-Grid".
+3. Add a **Web App** to your project to get your configuration object.
+4. Enable **Firestore Database** in production mode.
+5. Enable **Google Authentication** in the "Authentication" section.
 
+### 3. Connection Configuration
+Create a file at `src/firebase-applet-config.json` (or update the one from export) with your credentials:
+```json
+{
+  "apiKey": "YOUR_API_KEY",
+  "authDomain": "YOUR_PROJECT.firebaseapp.com",
+  "projectId": "YOUR_PROJECT_ID",
+  "storageBucket": "YOUR_PROJECT.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "...",
+  "firestoreDatabaseId": "(default)"
+}
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 4. Deploy Security Rules
+Copy the content of `firestore.rules` from this repository and paste it into the **Rules** tab of your Firestore Database in the Firebase Console. This is critical for data access.
+
+### 5. Local Development
+```bash
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+## 🛠 Features
+- **Global Seismic Sync**: Real-time earthquake data via USGS API.
+- **Orbital Weather Imagery**: Live weather telemetry and wind-speed alerts.
+- **Neural History**: Log of tactical grid operations.
+- **Core Overrides**: Simulation control for high-stress disaster scenarios.
+- **Interactive 3D Elements**: CSS-based tactical globe and motion-enhanced UI components.
+
+## 📡 Deployment
+To host on GitHub Pages:
+1. Install the gh-pages package: `npm install gh-pages --save-dev`
+2. Add `homepage` to `package.json`.
+3. Run `npm run deploy`.
+
+---
+*Note: This project was initially generated using Google AI Studio Build.*

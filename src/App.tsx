@@ -9,7 +9,10 @@ import {
   Map as MapIcon, 
   Bell, 
   Users,
-  AlertTriangle
+  AlertTriangle,
+  History,
+  Settings,
+  Cpu
 } from 'lucide-react';
 import { auth } from './lib/firebase';
 import { subscribeToDisasters, subscribeToAlerts, subscribeToVolunteers, dispatchVolunteer } from './services/dataService';
@@ -23,9 +26,11 @@ import SimulationControls from './components/SimulationControls';
 import SidePanel from './components/SidePanel';
 import VolunteerSim from './components/VolunteerSim';
 import HUDOverlay from './components/HUDOverlay';
+import NeuralHistory from './components/NeuralHistory';
+import CoreOverrides from './components/CoreOverrides';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 
-// --- Login Screen ---
+// --- Components ---
 
 const LoginScreen = () => {
   const handleLogin = () => {
@@ -130,34 +135,65 @@ const LoginScreen = () => {
       </div>
 
       {/* Center Globe Markers (Data Signals) */}
-      <div className="absolute inset-0 pointer-events-none z-10">
+      <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+        {/* Animated Scanning Line */}
         <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="absolute left-[45%] top-[40%]"
-        >
-          <div className="flex flex-col items-start gap-1">
-             <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-             <div className="text-[8px] font-mono text-cyan-400/80 uppercase tracking-widest bg-black/40 px-2 py-0.5 rounded">
-               Data Signal: Active
-             </div>
-          </div>
-        </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="absolute left-[55%] top-[60%]"
-        >
-          <div className="flex flex-col items-start gap-1">
-             <div className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
-             <div className="text-[8px] font-mono text-red-400/80 uppercase tracking-widest bg-black/40 px-2 py-0.5 rounded">
-               Threat Detected
-             </div>
-          </div>
-        </motion.div>
+          animate={{ x: ['-100%', '200%'] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute top-0 bottom-0 w-[50%] bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent skew-x-12 z-0"
+        />
+
+        {/* Global Data Nodes */}
+        {[
+          { left: '45%', top: '40%', label: 'Sector-01', color: 'bg-cyan-400' },
+          { left: '55%', top: '60%', label: 'Threat-Alpha', color: 'bg-red-400', threat: true },
+          { left: '30%', top: '55%', label: 'Ref-Node-X', color: 'bg-blue-400' },
+          { left: '70%', top: '35%', label: 'Orbital-Link', color: 'bg-emerald-400' },
+          { left: '20%', top: '25%', label: 'Static-09', color: 'bg-indigo-400' },
+        ].map((node, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1 + i * 0.2 }}
+            className="absolute"
+            style={{ left: node.left, top: node.top }}
+          >
+            <div className="flex flex-col items-start gap-1">
+               <div className={`w-2 h-2 rounded-full ${node.color} ${node.threat ? 'animate-[ping_1.5s_infinite]' : 'animate-pulse'}`} />
+               <motion.div 
+                 initial={{ width: 0, opacity: 0 }}
+                 animate={{ width: 'auto', opacity: 1 }}
+                 transition={{ delay: 2 + i * 0.2 }}
+                 className="overflow-hidden whitespace-nowrap"
+               >
+                 <div className={`text-[7px] font-mono ${node.threat ? 'text-red-400 border-red-500/30' : 'text-cyan-400/80 border-cyan-500/30'} uppercase tracking-[0.2em] bg-black/60 px-2 py-1 rounded border backdrop-blur-sm`}>
+                   {node.label}
+                 </div>
+               </motion.div>
+            </div>
+          </motion.div>
+        ))}
+
+        {/* Connection Lines (CSS-based) */}
+        <div className="absolute inset-0 opacity-10">
+          <svg className="w-full h-full">
+            <motion.line 
+              x1="45%" y1="40%" x2="55%" y2="60%" 
+              stroke="#06b6d4" strokeWidth="0.5" strokeDasharray="4 4"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ delay: 2.5, duration: 2 }}
+            />
+            <motion.line 
+              x1="45%" y1="40%" x2="70%" y2="35%" 
+              stroke="#06b6d4" strokeWidth="0.5" strokeDasharray="4 4"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ delay: 2.8, duration: 2 }}
+            />
+          </svg>
+        </div>
       </div>
 
       {/* Orbital Scanline Overlay */}
@@ -200,7 +236,6 @@ const BottomStat = ({ label, value }: { label: string, value: string }) => (
     <span className="text-xl font-bold text-cyan-400/90 tracking-tight">{value}</span>
   </div>
 );
-
 
 const VitalBox = ({ label, value }: { label: string, value: string }) => (
   <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-1">
@@ -483,6 +518,28 @@ export default function App() {
                  </div>
                  <HUDOverlay />
                </motion.div>
+            )}
+
+            {activeTab === 'history' && (
+              <motion.div 
+                key="history"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="p-12 h-screen overflow-y-auto scrollbar-hide"
+              >
+                <NeuralHistory />
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div 
+                key="settings"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="p-12 h-screen overflow-y-auto scrollbar-hide"
+              >
+                <CoreOverrides />
+              </motion.div>
             )}
           </AnimatePresence>
         </div>

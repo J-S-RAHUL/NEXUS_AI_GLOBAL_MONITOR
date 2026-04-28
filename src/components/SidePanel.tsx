@@ -64,6 +64,12 @@ export default function SidePanel({ disaster, onClose }: SidePanelProps) {
           <div className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-widest">
             {disaster.status}
           </div>
+          {disaster.live && (
+            <div className="flex items-center gap-2 text-emerald-500 animate-pulse">
+               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Real-Time Feed</span>
+            </div>
+          )}
         </div>
 
         {/* SummarySection */}

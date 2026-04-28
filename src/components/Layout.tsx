@@ -60,31 +60,90 @@ export default function Layout({ children, activeTab, setActiveTab, user }: Layo
         </div>
 
         {/* Tactical Globe Hook */}
-        <div className="relative h-48 w-full -mt-4 mb-4 flex items-center justify-center overflow-hidden pointer-events-none">
+        <div className="relative h-64 w-full -mt-8 mb-4 flex items-center justify-center overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-b from-[#020617] via-transparent to-[#020617] z-10" />
-          <div className="w-[180%] h-[180%] absolute opacity-20 animate-pulse">
-             <div className="w-full h-full rounded-full border border-cyan-500/10 scale-90 translate-y-4" />
-          </div>
-          {/* Animated Globe Component Placeholder - using a CSS-based tactical globe since full 3D might be heavy in a sidebar */}
-          <div className="w-32 h-32 relative z-0">
+          
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.05, 1],
+              opacity: [0.1, 0.2, 0.1]
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="w-[180%] h-[180%] absolute"
+          >
+             <div className="w-full h-full rounded-full border border-cyan-500/20 scale-90 translate-y-4" />
+          </motion.div>
+
+          {/* Animated Globe Component */}
+          <div className="w-40 h-40 relative z-0">
              <motion.div 
-               animate={{ rotateY: 360 }}
-               transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-               className="w-full h-full rounded-full border border-cyan-500/20 flex items-center justify-center relative shadow-[0_0_40px_rgba(6,182,212,0.1)]"
+               animate={{ 
+                 y: [0, -10, 0],
+                 rotateY: 360 
+               }}
+               transition={{ 
+                 y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                 rotateY: { duration: 20, repeat: Infinity, ease: "linear" }
+               }}
+               className="w-full h-full rounded-full border border-cyan-500/10 flex items-center justify-center relative shadow-[0_0_60px_rgba(6,182,212,0.05)]"
                style={{ transformStyle: 'preserve-3d' }}
              >
                 {/* Horizontal Rings */}
-                <div className="absolute inset-0 border border-cyan-500/10 rounded-full scale-y-[0.3]" />
-                <div className="absolute inset-0 border border-cyan-500/10 rounded-full scale-y-[0.6]" />
-                {/* Vertical Lines */}
-                <div className="absolute inset-0 border border-cyan-500/10 rounded-full scale-x-[0.3]" />
-                <div className="absolute inset-0 border border-cyan-500/10 rounded-full scale-x-[0.6]" />
+                {[0.2, 0.4, 0.6, 0.8].map((scale, i) => (
+                  <motion.div 
+                    key={`h-ring-${i}`}
+                    animate={{ rotateZ: i % 2 === 0 ? 360 : -360 }}
+                    transition={{ duration: 10 + i * 5, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 border border-cyan-500/10 rounded-full"
+                    style={{ transform: `scaleY(${scale})` }}
+                  />
+                ))}
+
+                {/* Vertical Rings */}
+                {[0.2, 0.4, 0.6, 0.8].map((scale, i) => (
+                  <motion.div 
+                    key={`v-ring-${i}`}
+                    animate={{ rotateX: i % 2 === 0 ? 360 : -360 }}
+                    transition={{ duration: 12 + i * 4, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 border border-cyan-500/5 rounded-full"
+                    style={{ transform: `scaleX(${scale})` }}
+                  />
+                ))}
+
+                {/* Orbital Nodes */}
+                {[0, 120, 240].map((angle, i) => (
+                  <motion.div
+                    key={`node-${i}`}
+                    animate={{ rotateY: 360 }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear", delay: i * 1.5 }}
+                    className="absolute inset-0 z-20"
+                    style={{ transformStyle: 'preserve-3d' }}
+                  >
+                    <div 
+                      className="w-1.5 h-1.5 rounded-full bg-cyan-400 absolute left-1/2 -top-1 shadow-[0_0_10px_#06b6d4]"
+                      style={{ transform: 'translateX(-50%) translateZ(80px)' }}
+                    />
+                  </motion.div>
+                ))}
+
                 {/* Core pulse */}
-                <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                <div className="relative flex items-center justify-center">
+                  <motion.div 
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0.6, 0.3] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="absolute w-8 h-8 rounded-full bg-cyan-500/20 blur-xl"
+                  />
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping shadow-[0_0_15px_#06b6d4]" />
+                  <div className="w-1 h-1 rounded-full bg-white absolute z-10" />
+                </div>
              </motion.div>
           </div>
-          <div className="absolute bottom-4 left-0 right-0 text-center">
-             <span className="text-[7px] font-mono text-white/20 uppercase tracking-[0.5em]">Global Grid Active</span>
+          
+          <div className="absolute bottom-6 left-0 right-0 text-center">
+             <div className="flex flex-col items-center gap-1">
+                <span className="text-[7px] font-mono text-cyan-500 animate-pulse uppercase tracking-[0.5em]">Global Grid Active</span>
+                <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+             </div>
           </div>
         </div>
 
@@ -126,7 +185,7 @@ export default function Layout({ children, activeTab, setActiveTab, user }: Layo
           <SidebarItem icon={Users} label="Responders" id="volunteers" active={activeTab === 'volunteers'} onClick={setActiveTab} />
           <SidebarItem icon={BarChart3} label="Impact Analytics" id="analytics" active={activeTab === 'analytics'} onClick={setActiveTab} />
           
-          <div className="pt-8 opacity-50 grayscale">
+          <div className="pt-8">
             <p className="px-8 text-[9px] font-mono text-white/30 uppercase tracking-[0.2em] mb-4">Security</p>
             <SidebarItem icon={Database} label="Neural History" id="history" active={activeTab === 'history'} onClick={setActiveTab} />
             <SidebarItem icon={Settings} label="Core Overrides" id="settings" active={activeTab === 'settings'} onClick={setActiveTab} />

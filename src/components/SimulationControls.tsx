@@ -1,12 +1,39 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Play, Pause, RefreshCw, Zap, Server, Globe, Users } from 'lucide-react';
-import { createDisaster, createAlert, createVolunteer } from '../services/dataService';
+import { createDisaster, createAlert, createVolunteer, fetchUSGSEarthquakes, fetchLiveWeatherAlerts } from '../services/dataService';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function SimulationControls() {
   const [running, setRunning] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [intervalId, setIntervalId] = useState<any>(null);
+
+  const syncLiveFeeds = async () => {
+    setSyncing(true);
+    try {
+      await createAlert("SYSTEM: Initializing live tactical data sync...", "info");
+      
+      const earthquakes = await fetchUSGSEarthquakes();
+      const weatherEvents = await fetchLiveWeatherAlerts();
+      
+      const allEvents = [...earthquakes, ...weatherEvents];
+      
+      if (allEvents.length === 0) {
+        await createAlert("SYNC: No new significant global events detected in current window.", "info");
+      } else {
+        for (const event of allEvents.slice(0, 3)) { // Limit to top 3 to avoid spam
+          await createDisaster(event);
+          await createAlert(`LIVE: ${event.title.toUpperCase()} detected via orbital downlink. Severity: ${event.severity.toUpperCase()}`, event.severity === 'high' ? 'error' : 'warning');
+        }
+        await createAlert(`SYNC: Successfully synchronized ${Math.min(allEvents.length, 3)} live global vectors.`, "success");
+      }
+    } catch (error) {
+      await createAlert("SYNC_ERROR: Failed to establish secure connection with global data nodes.", "error");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const seedVolunteers = async () => {
     const names = [
@@ -108,6 +135,14 @@ export default function SimulationControls() {
           className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-[10px] font-bold uppercase tracking-[0.1em] bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 transition-all"
         >
           <RefreshCw className="w-3 h-3" /> Force Event
+        </button>
+
+        <button 
+          onClick={syncLiveFeeds}
+          disabled={syncing}
+          className="col-span-2 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-[10px] font-bold uppercase tracking-[0.1em] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all disabled:opacity-50"
+        >
+          <Globe className={`w-3 h-3 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing Nodes...' : 'Sync Live Global Feeds'}
         </button>
 
         <button 
